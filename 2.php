@@ -44,7 +44,7 @@ echo "<pre> отсортированный массив \n";
 print_r(mySortForKey($arr, 'b'));
 echo "</pre>";
 
-function conMySQL()
+function conMySQL()     // подключение к БД
 {
     $host = 'localhost';
     $db = 'test_samson';
@@ -62,15 +62,15 @@ function conMySQL()
     return new PDO($dsn, $user, $pass, $opt);
 }
 
-function importXml($a)
+function importXml($a)      // импрт в БД из файла
 {
     $pdo = conMySQL();
 
 
-    function setIns($val, $fields = [])
+    function setIns($val, $fields = []) // создание SQL Запроса на добавление данных
     {
 
-        if (!empty($fields)) {
+        if (!empty($fields)) {      //если список полей не пустой то работать вставлять по полям
             $extSql = '(';
             foreach ($fields as $field) {
                 $extSql .= $field . ',';
@@ -80,7 +80,7 @@ function importXml($a)
                 is_string($item) ? $extSql .= "'" . $item . "'," : $extSql .= $item . ",";
             }
             $extSql = substr_replace($extSql, ');', -1);
-        } else {
+        } else {            // если список полей пустой то вставлять все поля подряд
             $extSql = 'VALUES (';
             foreach ($val as $item) {
                 is_string($item) ? $extSql .= "'" . $item . "'," : $extSql .= $item . ",";
@@ -109,9 +109,7 @@ function importXml($a)
         $arrFields = ['tovar', 'propety'];
 
         foreach ($tovar->Свойства as $property) {
-
             $arrVal = [$idTovar, json_encode($property, JSON_UNESCAPED_UNICODE)];
-
         }
 
         $sql = 'INSERT INTO a_property ' . setIns($arrVal, $arrFields);
@@ -157,7 +155,7 @@ function importXml($a)
 
 importXml('tovar.xml');
 
-function exportXml($a, $b)
+function exportXml($a, $b)  // экспорт данных из БД в файл по заданной рубрике
 {
     $pdo = conMySQL();
     $iXML = new DOMDocument('1.0', 'utf-8');
