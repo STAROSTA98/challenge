@@ -154,6 +154,88 @@ function importXml($a)
     }
 
 }
+
 importXml('tovar.xml');
+
+function exportXml($a, $b)
+{
+    $pdo = conMySQL();
+    $iXML = new DOMDocument('1.0', 'utf-8');
+
+    $root = $iXML->createElement("Товары");
+    $iXML->appendChild($root);
+
+    $stmt = $pdo->prepare("SELECT tovar FROM product_category WHERE category = ?;");
+    $stmt->execute(array($b));
+    while ($row = $stmt->fetch(PDO::FETCH_LAZY)) {
+
+
+        $stmtTovar = $pdo->prepare("SELECT * FROM a_product WHERE kod = ?");
+        $stmtTovar->execute(array($row[0]));
+        $rowTovar = $stmtTovar->fetch(PDO::FETCH_LAZY);
+        $id = $rowTovar['id'];
+        $kod = $rowTovar['kod'];
+        $name = $rowTovar['name'];
+
+        $tovar = $iXML->createElement('Товар');
+        $tovar->setAttribute('Код', $kod);
+        $tovar->setAttribute('Название', $name);
+
+        $stmtPrice = $pdo->prepare("SELECT * FROM a_price WHERE tovar = ?");
+        $stmtPrice->execute(array($id));
+
+        while ($rowPrice = $stmtPrice->fetch(PDO::FETCH_LAZY)) {
+            $price = $iXML->createElement('Цена', $rowPrice['price']);
+            $price->setAttribute('Тип', $rowPrice['type_price']);
+            $tovar->appendChild($price);
+        }
+
+        $genProperty = $iXML->createElement('Свойства');
+
+        $stmtProperty = $pdo->prepare("SELECT * FROM a_property WHERE tovar = ?");
+        $stmtProperty->execute(array($id));
+
+        $arrProperty = json_decode($stmtProperty->fetchColumn(1));
+        foreach ($arrProperty as $key => $prop) {
+            if (is_array($prop)) {
+                foreach ($prop as $item) {
+                    $property = $iXML->createElement($key, $item);
+                    $genProperty->appendChild($property);
+                }
+            } else {
+                $property = $iXML->createElement($key, $prop);
+                $genProperty->appendChild($property);
+            }
+        }
+
+        $tovar->appendChild($genProperty);
+
+        $genCategory = $iXML->createElement('Разделы');
+
+        $stmtProperty = $pdo->prepare("SELECT a_category.name, a_category.parent_kod, product_category.tovar, product_category.category
+                                    FROM a_category INNER JOIN product_category ON a_category.kod = product_category.category
+                                    WHERE product_category.tovar = ?
+                                    GROUP BY product_category.category");
+        $stmtProperty->execute(array($kod));
+
+        while ($rowCategory = $stmtProperty->fetch(PDO::FETCH_LAZY)) {
+            $category = $iXML->createElement('Раздел', $rowCategory['name']);
+            $category->setAttribute('Код', $rowCategory['category']);
+            if ($rowCategory['parent_kod']) {
+                $category->setAttribute('Родитель', $rowCategory['parent_kod']);
+            }
+            $genCategory->appendChild($category);
+
+        }
+
+        $tovar->appendChild($genCategory);
+
+        $root->appendChild($tovar);
+
+        $iXML->save($a);
+    }
+}
+
+exportXml("import_tovar.xml", 3);
 
 ?>
