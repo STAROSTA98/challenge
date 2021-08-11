@@ -154,7 +154,6 @@ function importXml($a)
     }
 
 }
-
 importXml('tovar.xml');
 
 ?>
