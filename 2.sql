@@ -38,7 +38,6 @@ CREATE TABLE `a_category` (
 
 LOCK TABLES `a_category` WRITE;
 /*!40000 ALTER TABLE `a_category` DISABLE KEYS */;
-INSERT INTO `a_category` VALUES (48,100,'Бумага',0),(49,100,'Бумага',0),(50,1,'Офисная техника',0),(51,2,'Печатающие устройства',1),(52,3,'Принтеры',2),(53,4,'МФУ',2),(54,1,'Офисная техника',0),(55,2,'Печатающие устройства',1),(56,3,'Принтеры',2);
 /*!40000 ALTER TABLE `a_category` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -64,7 +63,6 @@ CREATE TABLE `a_price` (
 
 LOCK TABLES `a_price` WRITE;
 /*!40000 ALTER TABLE `a_price` DISABLE KEYS */;
-INSERT INTO `a_price` VALUES (200,'Базовая',12),(200,'Москва',13),(201,'Базовая',19),(201,'Москва',23),(202,'Базовая',3010),(202,'Москва',3500),(203,'Базовая',3310),(203,'Москва',2999);
 /*!40000 ALTER TABLE `a_price` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -90,7 +88,6 @@ CREATE TABLE `a_product` (
 
 LOCK TABLES `a_product` WRITE;
 /*!40000 ALTER TABLE `a_product` DISABLE KEYS */;
-INSERT INTO `a_product` VALUES (200,201,'Бумага А4'),(201,202,'Бумага А3'),(202,302,'Принтер Canon'),(203,305,'Принтер HP');
 /*!40000 ALTER TABLE `a_product` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -114,7 +111,6 @@ CREATE TABLE `a_property` (
 
 LOCK TABLES `a_property` WRITE;
 /*!40000 ALTER TABLE `a_property` DISABLE KEYS */;
-INSERT INTO `a_property` VALUES (200,'{\"Плотность\":\"100\",\"Белизна\":\"150\"}'),(201,'{\"Плотность\":\"90\",\"Белизна\":\"100\"}'),(202,'{\"Формат\":[\"A4\",\"A3\"],\"Тип\":\"Лазерный\"}'),(203,'{\"Формат\":\"A3\",\"Тип\":\"Лазерный\"}');
 /*!40000 ALTER TABLE `a_property` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -141,7 +137,6 @@ CREATE TABLE `product_category` (
 
 LOCK TABLES `product_category` WRITE;
 /*!40000 ALTER TABLE `product_category` DISABLE KEYS */;
-INSERT INTO `product_category` VALUES (201,100),(202,100),(302,1),(302,2),(302,3),(302,4),(305,1),(305,2),(305,3);
 /*!40000 ALTER TABLE `product_category` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -154,4 +149,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-08-11 14:53:40
+-- Dump completed on 2021-08-11 15:06:45
