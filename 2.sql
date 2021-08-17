@@ -24,11 +24,11 @@ DROP TABLE IF EXISTS `a_category`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `a_category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `kod` int(11) NOT NULL,
+  `code` int(11) NOT NULL,
   `name` varchar(50) NOT NULL,
-  `parent_kod` int(11) DEFAULT NULL,
+  `parent_code` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `kod` (`kod`)
+  KEY `code` (`code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -50,11 +50,11 @@ DROP TABLE IF EXISTS `a_price`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `a_price` (
-  `tovar` int(11) NOT NULL,
+  `product` int(11) NOT NULL,
   `type_price` varchar(50) NOT NULL,
   `price` int(11) NOT NULL,
-  KEY `a_price` (`tovar`),
-  CONSTRAINT `a_price_ibfk_1` FOREIGN KEY (`tovar`) REFERENCES `a_product` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `a_price` (`product`),
+  CONSTRAINT `a_price_ibfk_1` FOREIGN KEY (`product`) REFERENCES `a_product` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -77,10 +77,10 @@ DROP TABLE IF EXISTS `a_product`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `a_product` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `kod` int(11) NOT NULL,
+  `code` int(11) NOT NULL,
   `name` varchar(50) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `kod` (`kod`)
+  UNIQUE KEY `code` (`code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=204 DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -102,9 +102,9 @@ DROP TABLE IF EXISTS `a_property`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `a_property` (
-  `tovar` int(11) NOT NULL,
+  `product` int(11) NOT NULL,
   `propety` text DEFAULT NULL,
-  KEY `id_tovar` (`tovar`)
+  KEY `id_product` (`product`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -126,12 +126,12 @@ DROP TABLE IF EXISTS `product_category`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `product_category` (
-  `tovar` int(11) NOT NULL,
+  `product` int(11) NOT NULL,
   `category` int(11) NOT NULL,
-  KEY `tovar` (`tovar`),
+  KEY `product` (`product`),
   KEY `category` (`category`),
-  CONSTRAINT `product_category_ibfk_3` FOREIGN KEY (`tovar`) REFERENCES `a_product` (`kod`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `product_category_ibfk_4` FOREIGN KEY (`category`) REFERENCES `a_category` (`kod`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `product_category_ibfk_3` FOREIGN KEY (`product`) REFERENCES `a_product` (`code`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `product_category_ibfk_4` FOREIGN KEY (`category`) REFERENCES `a_category` (`code`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

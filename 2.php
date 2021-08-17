@@ -1,40 +1,39 @@
 <?php
 
-function convertString($a, $b)
+function convertString(string $a, string $b): string
 {
     $pattern = '/' . $b . '/ui';
 
-    preg_match_all($pattern, $a, $mathes, PREG_OFFSET_CAPTURE);
-
-    $b = implode(array_reverse(mb_str_split($b)));
-
-    return substr_replace($a, $b, $mathes[0][1][1], strlen($b));
+    if (preg_match_all($pattern, $a, $mathes, PREG_OFFSET_CAPTURE)) {
+        $b = implode(array_reverse(mb_str_split($b)));
+        return substr_replace($a, $b, $mathes[0][1][1], strlen($b));
+    } else {
+        return "Строка не найдена";
+    }
 
 }
-echo "Мама мыла раму мама мама <br>";
+
+echo "Мама мыла раму мама она мама <br>";
 echo convertString("Мама мыла раму мама она мама", "мама");
 
-function mySortForKey($a, $b)
+function mySortForKey(array $a, string $b): array
 {
-    $idErr = -1;
 
     foreach ($a as $key => $item) {
-        !array_key_exists($b, $item) ? $idErr = $key : false;
+        if (!array_key_exists($b, $item)) {
+            throw new Exception('В подмассиве ' . $key . ' отсутствует ключ "' . $b . '"');
+        }
     }
 
-    if ($idErr >= 0) {
-        throw new Exception('В подмассиве ' . $idErr . ' отсутствует ключ "' . $b . '"');
-    } else {
-        uasort($a, function ($i, $j) use ($b, $a) {
-            return $i[$b] > $j[$b] ? 1 : 0;
-        });
-    }
+    uasort($a, function ($i, $j) use ($b) {
+        return $i[$b] > $j[$b] ? 1 : 0;
+    });
 
     return $a;
 }
 
 
-$arr =  [['a' => 2, 'b' => 33], ['b' => 34], ['a' => 77, 'b' => 55], ['a' => 54, 'b' => 65], ['a' => 4455, 'b' => 563], ['a' => 57, 'b' => 0], ['a' => 9, 'b' => 1055]];
+$arr = [['a' => 2, 'b' => 33], ['b' => 34], ['a' => 77, 'b' => 55], ['a' => 54, 'b' => 65], ['a' => 4455, 'b' => 563], ['a' => 57, 'b' => 0], ['a' => 9, 'b' => 1055]];
 
 echo "<pre> исходный массив \n";
 print_r(mySortForKey($arr, 'b'));
@@ -62,10 +61,9 @@ function conMySQL()     // подключение к БД
     return new PDO($dsn, $user, $pass, $opt);
 }
 
-function importXml($a)      // импрт в БД из файла
+function importXml(string $a): void    // импорт в БД из файла
 {
     $pdo = conMySQL();
-
 
     function setIns($val, $fields = []) // создание SQL Запроса на добавление данных
     {
@@ -93,57 +91,58 @@ function importXml($a)      // импрт в БД из файла
 
     if (file_exists($a)) {
         $xml = simplexml_load_file($a);
-    }
 
-    foreach ($xml as $tovar) {
+        foreach ($xml as $product) {
 
-        $arrVal = [$tovar['Код'], (string)$tovar['Название']];
-        $arrFields = ['kod', 'name'];
-        $sql = 'INSERT INTO a_product ' . setIns($arrVal, $arrFields);
-        $stm = $pdo->prepare($sql);
-        $stm->execute();
-
-        $idTovar = $pdo->lastInsertId();
-
-        $arrVal = [];
-        $arrFields = ['tovar', 'propety'];
-
-        foreach ($tovar->Свойства as $property) {
-            $arrVal = [$idTovar, json_encode($property, JSON_UNESCAPED_UNICODE)];
-        }
-
-        $sql = 'INSERT INTO a_property ' . setIns($arrVal, $arrFields);
-        $stm = $pdo->prepare($sql);
-        $stm->execute();
-
-        $arrFields = ['tovar', 'type_price', 'price'];
-
-        foreach ($tovar->Цена as $key => $item) {
-            $arrVal = [$idTovar, (string)$item['Тип'], (float)$item];
-            $sql = 'INSERT INTO a_price ' . setIns($arrVal, $arrFields);
+            $arrVal = [$product['Код'], (string)$product['Название']];
+            $arrFields = ['code', 'name'];
+            $sql = 'INSERT INTO a_product ' . setIns($arrVal, $arrFields);
             $stm = $pdo->prepare($sql);
             $stm->execute();
-        }
 
-        foreach ($tovar->Разделы as $category) {
-            foreach ($category as $item) {
+            $idproduct = $pdo->lastInsertId();
 
-                $arrFields = ['kod', 'name', 'parent_kod'];
+            $arrVal = [];
+            $arrFields = ['product', 'propety'];
 
-                if ($item['Родитель']) {
-                    $arrVal = [$item['Код'], (string)$item, $item['Родитель']];
-                } else {
-                    $arrVal = [$item['Код'], (string)$item, 'NULL'];
+            foreach ($product->Свойства as $property) {
+                $arrVal = [$idproduct, json_encode($property, JSON_UNESCAPED_UNICODE)];
+            }
+
+            $sql = 'INSERT INTO a_property ' . setIns($arrVal, $arrFields);
+            $stm = $pdo->prepare($sql);
+            $stm->execute();
+
+            $arrFields = ['product', 'type_price', 'price'];
+
+            foreach ($product->Цена as $key => $item) {
+                $arrVal = [$idproduct, (string)$item['Тип'], (float)$item];
+                $sql = 'INSERT INTO a_price ' . setIns($arrVal, $arrFields);
+                $stm = $pdo->prepare($sql);
+                $stm->execute();
+            }
+
+            foreach ($product->Разделы as $category) {
+                foreach ($category as $item) {
+
+                    $arrFields = ['code', 'name', 'parent_code'];
+
+                    if ($item['Родитель']) {
+                        $arrVal = [$item['Код'], (string)$item, $item['Родитель']];
+                    } else {
+                        $arrVal = [$item['Код'], (string)$item, 'NULL'];
+                    }
+                    $sql = 'INSERT IGNORE INTO a_category ' . setIns($arrVal, $arrFields);
+                    $stm = $pdo->prepare($sql);
+                    $stm->execute();
+
+                    $arrVal = [$product['Код'], $item['Код']];
+                    $arrFields = ['product', 'category'];
+                    $sql = 'INSERT INTO product_category ' . setIns($arrVal, $arrFields);
+                    $stm = $pdo->prepare($sql);
+                    $stm->execute();
+
                 }
-                $sql = 'INSERT IGNORE INTO a_category ' . setIns($arrVal, $arrFields);
-                $stm = $pdo->prepare($sql);
-                $stm->execute();
-
-                $arrVal = [$tovar['Код'], $item['Код']];
-                $arrFields = ['tovar', 'category'];
-                $sql = 'INSERT INTO product_category ' . setIns($arrVal, $arrFields);
-                $stm = $pdo->prepare($sql);
-                $stm->execute();
 
             }
 
@@ -153,9 +152,9 @@ function importXml($a)      // импрт в БД из файла
 
 }
 
-importXml('tovar.xml');
+importXml('product.xml');
 
-function exportXml($a, $b)  // экспорт данных из БД в файл по заданной рубрике
+function exportXml($a, $b): void  // экспорт данных из БД в файл по заданной рубрике
 {
     $pdo = conMySQL();
     $iXML = new DOMDocument('1.0', 'utf-8');
@@ -163,34 +162,34 @@ function exportXml($a, $b)  // экспорт данных из БД в файл
     $root = $iXML->createElement("Товары");
     $iXML->appendChild($root);
 
-    $stmt = $pdo->prepare("SELECT tovar FROM product_category WHERE category = ?;");
+    $stmt = $pdo->prepare("SELECT product FROM product_category WHERE category = ?;");
     $stmt->execute(array($b));
     while ($row = $stmt->fetch(PDO::FETCH_LAZY)) {
 
 
-        $stmtTovar = $pdo->prepare("SELECT * FROM a_product WHERE kod = ?");
-        $stmtTovar->execute(array($row[0]));
-        $rowTovar = $stmtTovar->fetch(PDO::FETCH_LAZY);
-        $id = $rowTovar['id'];
-        $kod = $rowTovar['kod'];
-        $name = $rowTovar['name'];
+        $stmtproduct = $pdo->prepare("SELECT * FROM a_product WHERE code = ?");
+        $stmtproduct->execute(array($row[0]));
+        $rowproduct = $stmtproduct->fetch(PDO::FETCH_LAZY);
+        $id = $rowproduct['id'];
+        $code = $rowproduct['code'];
+        $name = $rowproduct['name'];
 
-        $tovar = $iXML->createElement('Товар');
-        $tovar->setAttribute('Код', $kod);
-        $tovar->setAttribute('Название', $name);
+        $product = $iXML->createElement('Товар');
+        $product->setAttribute('Код', $code);
+        $product->setAttribute('Название', $name);
 
-        $stmtPrice = $pdo->prepare("SELECT * FROM a_price WHERE tovar = ?");
+        $stmtPrice = $pdo->prepare("SELECT * FROM a_price WHERE product = ?");
         $stmtPrice->execute(array($id));
 
         while ($rowPrice = $stmtPrice->fetch(PDO::FETCH_LAZY)) {
             $price = $iXML->createElement('Цена', $rowPrice['price']);
             $price->setAttribute('Тип', $rowPrice['type_price']);
-            $tovar->appendChild($price);
+            $product->appendChild($price);
         }
 
         $genProperty = $iXML->createElement('Свойства');
 
-        $stmtProperty = $pdo->prepare("SELECT * FROM a_property WHERE tovar = ?");
+        $stmtProperty = $pdo->prepare("SELECT * FROM a_property WHERE product = ?");
         $stmtProperty->execute(array($id));
 
         $arrProperty = json_decode($stmtProperty->fetchColumn(1));
@@ -206,34 +205,34 @@ function exportXml($a, $b)  // экспорт данных из БД в файл
             }
         }
 
-        $tovar->appendChild($genProperty);
+        $product->appendChild($genProperty);
 
         $genCategory = $iXML->createElement('Разделы');
 
-        $stmtProperty = $pdo->prepare("SELECT a_category.name, a_category.parent_kod, product_category.tovar, product_category.category
-                                    FROM a_category INNER JOIN product_category ON a_category.kod = product_category.category
-                                    WHERE product_category.tovar = ?
+        $stmtProperty = $pdo->prepare("SELECT a_category.name, a_category.parent_code, product_category.product, product_category.category
+                                    FROM a_category INNER JOIN product_category ON a_category.code = product_category.category
+                                    WHERE product_category.product = ?
                                     GROUP BY product_category.category");
-        $stmtProperty->execute(array($kod));
+        $stmtProperty->execute(array($code));
 
         while ($rowCategory = $stmtProperty->fetch(PDO::FETCH_LAZY)) {
             $category = $iXML->createElement('Раздел', $rowCategory['name']);
             $category->setAttribute('Код', $rowCategory['category']);
-            if ($rowCategory['parent_kod']) {
-                $category->setAttribute('Родитель', $rowCategory['parent_kod']);
+            if ($rowCategory['parent_code']) {
+                $category->setAttribute('Родитель', $rowCategory['parent_code']);
             }
             $genCategory->appendChild($category);
 
         }
 
-        $tovar->appendChild($genCategory);
+        $product->appendChild($genCategory);
 
-        $root->appendChild($tovar);
+        $root->appendChild($product);
 
         $iXML->save($a);
     }
 }
 
-exportXml("import_tovar.xml", 3);
+exportXml("import_product.xml", 3);
 
 ?>
