@@ -8,7 +8,7 @@ function convertString(string $a, string $b): string
         $b = implode(array_reverse(mb_str_split($b)));
         return substr_replace($a, $b, $mathes[0][1][1], strlen($b));
     } else {
-        return "Строка не найдена";
+        return "Строка $b не найдена";
     }
 
 }
@@ -31,7 +31,6 @@ function mySortForKey(array $a, string $b): array
 
     return $a;
 }
-
 
 $arr = [['a' => 2, 'b' => 33], ['b' => 34], ['a' => 77, 'b' => 55], ['a' => 54, 'b' => 65], ['a' => 4455, 'b' => 563], ['a' => 57, 'b' => 0], ['a' => 9, 'b' => 1055]];
 
