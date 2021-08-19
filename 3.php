@@ -8,7 +8,7 @@ class newBase
     /**
      * @param string $name
      */
-    function __construct(int $name = 0)
+    function __construct(string $name = '0')
     {
         if (empty($name)) {
             while (array_search(self::$count, self::$arSetName) != false) {
@@ -19,7 +19,7 @@ class newBase
         $this->name = $name;
         self::$arSetName[] = $this->name;
     }
-    private $name;
+    protected $name;
     /**
      * @return string
      */
@@ -52,8 +52,11 @@ class newBase
      */
     public function getSave(): string
     {
-        $value = serialize($value);
-        return $this->name . ':' . sizeof($value) . ':' . $value;
+
+        $value = serialize($this->value);
+        echo "<br>";
+        var_dump($value);
+        return $this->name . ':' . strlen($value) . ':' . $value;
     }
     /**
      * @return newBase
@@ -91,7 +94,7 @@ class newView extends newBase
     }
     private function setSize()
     {
-        if (is_subclass_of($this->value, "Test3\newView")) {
+        if (is_subclass_of($this, get_class($this->value))) {
             $this->size = parent::getSize() + 1 + strlen($this->property);
         } elseif ($this->type == 'test') {
             $this->size = parent::getSize();
@@ -157,32 +160,44 @@ class newView extends newBase
     static public function load(string $value): newBase
     {
         $arValue = explode(':', $value);
+
+
+        echo "<br>";
+        echo unserialize(substr($value, strlen($arValue[0]) + 1
+            + strlen($arValue[1]) + 1 + $arValue[1]));
+
+        echo "<pre>";
+        print_r(new newBase($arValue[0]));
+        echo "</pre>";
+
         return (new newBase($arValue[0]))
             ->setValue(unserialize(substr($value, strlen($arValue[0]) + 1
-                + strlen($arValue[1]) + 1), $arValue[1]))
+                + strlen($arValue[1]) + 1), $arValue))
             ->setProperty(unserialize(substr($value, strlen($arValue[0]) + 1
                 + strlen($arValue[1]) + 1 + $arValue[1])))
             ;
+
     }
 }
-function gettype($value): string
-{
-    if (is_object($value)) {
-        $type = get_class($value);
-        do {
-            if (strpos($type, "Test3\newBase") !== false) {
-                return 'test';
-            }
-        } while ($type = get_parent_class($type));
-    }
-    return gettype($value);
-}
+
+//function gettype($value): string
+//{
+//    if (is_object($value)) {
+//        $type = get_class($value);
+//        do {
+//            if (strpos($type, "Test3\newBase") !== false) {
+//                return 'test';
+//            }
+//        } while ($type = get_parent_class($type));
+//    }
+//    return gettype($value);
+//}
 
 
 $obj = new newBase('12345');
 $obj->setValue('text');
 
-$obj2 = new \Test3\newView('O9876');
+$obj2 = new \Test3\newView('09876');
 $obj2->setValue($obj);
 $obj2->setProperty('field');
 $obj2->getInfo();
