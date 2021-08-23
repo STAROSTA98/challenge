@@ -1,14 +1,16 @@
 <?php
+
 namespace Test3;
 
 class newBase
 {
     static private $count = 0;
     static private $arSetName = [];
+
     /**
      * @param string $name
      */
-    function __construct(int $name = 0)
+    function __construct(string $name = '0')     // должно string, а было Int
     {
         if (empty($name)) {
             while (array_search(self::$count, self::$arSetName) != false) {
@@ -19,15 +21,19 @@ class newBase
         $this->name = $name;
         self::$arSetName[] = $this->name;
     }
-    private $name;
+
+    protected $name;      // нужно protected иначе дочерний класс не имеет  к свойству
+
     /**
      * @return string
      */
     public function getName(): string
     {
-        return '*' . $this->name  . '*';
+        return '*' . $this->name . '*';
     }
+
     protected $value;
+
     /**
      * @param mixed $value
      */
@@ -35,6 +41,7 @@ class newBase
     {
         $this->value = $value;
     }
+
     /**
      * @return string
      */
@@ -43,18 +50,21 @@ class newBase
         $size = strlen(serialize($this->value));
         return strlen($size) + $size;
     }
+
     public function __sleep()
     {
         return ['value'];
     }
+
     /**
      * @return string
      */
     public function getSave(): string
     {
-        $value = serialize($value);
-        return $this->name . ':' . sizeof($value) . ':' . $value;
+        $value = serialize($this->value);   // было обращение к локальной переменной, а нужно к свойству класса
+        return $this->name . ':' . strlen($value) . ':' . $value; // serialize преобразовывает в строку, а значит нужно strlen
     }
+
     /**
      * @return newBase
      */
@@ -66,11 +76,13 @@ class newBase
                 + strlen($arValue[1]) + 1), $arValue[1]));
     }
 }
+
 class newView extends newBase
 {
     private $type = null;
     private $size = 0;
     private $property = null;
+
     /**
      * @param mixed $value
      */
@@ -80,18 +92,21 @@ class newView extends newBase
         $this->setType();
         $this->setSize();
     }
+
     public function setProperty($value)
     {
         $this->property = $value;
         return $this;
     }
+
     private function setType()
     {
-        $this->type = gettype($this->value);
+        $this->type = typeGet($this->value); // typeGet потму что переименовано из gettype
     }
+
     private function setSize()
     {
-        if (is_subclass_of($this->value, "Test3\newView")) {
+        if (is_subclass_of($this->value, "Test3\\newView")) {    // необходимо экранировать \n
             $this->size = parent::getSize() + 1 + strlen($this->property);
         } elseif ($this->type == 'test') {
             $this->size = parent::getSize();
@@ -99,6 +114,7 @@ class newView extends newBase
             $this->size = strlen($this->value);
         }
     }
+
     /**
      * @return string
      */
@@ -106,6 +122,7 @@ class newView extends newBase
     {
         return ['property'];
     }
+
     /**
      * @return string
      */
@@ -114,15 +131,17 @@ class newView extends newBase
         if (empty($this->name)) {
             throw new Exception('The object doesn\'t have name');
         }
-        return '"' . $this->name  . '": ';
+        return '"' . $this->name . '": ';
     }
+
     /**
      * @return string
      */
     public function getType(): string
     {
-        return ' type ' . $this->type  . ';';
+        return ' type ' . $this->type . ';';
     }
+
     /**
      * @return string
      */
@@ -130,6 +149,7 @@ class newView extends newBase
     {
         return ' size ' . $this->size . ';';
     }
+
     public function getInfo()
     {
         try {
@@ -141,36 +161,43 @@ class newView extends newBase
             echo 'Error: ' . $exc->getMessage();
         }
     }
+
     /**
      * @return string
      */
     public function getSave(): string
     {
-        if ($this->type == 'test') {
+        if ($this->type == 'object') {   // исправлено c test на object поскольку $this->value становится строкой, а вызывается метод объекта
             $this->value = $this->value->getSave();
         }
         return parent::getSave() . serialize($this->property);
     }
+
     /**
      * @return newView
      */
-    static public function load(string $value): newBase
+    static public function load(string $value): newView
     {
         $arValue = explode(':', $value);
-        return (new newBase($arValue[0]))
-            ->setValue(unserialize(substr($value, strlen($arValue[0]) + 1
-                + strlen($arValue[1]) + 1), $arValue[1]))
-            ->setProperty(unserialize(substr($value, strlen($arValue[0]) + 1
-                + strlen($arValue[1]) + 1 + $arValue[1])))
-            ;
+
+        $obj = new newView($arValue[0]);    // тип объекта сменён с newBase на newView,
+        // поскольку в newBase отсутствует метод setProperty
+        // а также сначала создан объект
+        $obj->setValue(unserialize(substr($value, strlen($arValue[0]) + 1   // и вызваны его методы
+            + strlen($arValue[1]) + 1)));  // убрано $arValue[1]
+        $obj->setProperty(unserialize(substr($value, strlen($arValue[0]) + 1
+            + strlen($arValue[1]) + 1 + $arValue[1])));
+        return ($obj);  // а затем возвращается данный объект
+
     }
 }
-function gettype($value): string
+
+function typeGet($value): string   // функция переименована потому что совпадает с служебной функцией gettype
 {
     if (is_object($value)) {
         $type = get_class($value);
         do {
-            if (strpos($type, "Test3\newBase") !== false) {
+            if (strpos($type, "Test3\\newBase") !== false) {    // необходимо экранировать \n
                 return 'test';
             }
         } while ($type = get_parent_class($type));
@@ -190,6 +217,8 @@ $obj2->getInfo();
 $save = $obj2->getSave();
 
 $obj3 = newView::load($save);
+
+$obj2->getSave();
 
 var_dump($obj2->getSave() == $obj3->getSave());
 
