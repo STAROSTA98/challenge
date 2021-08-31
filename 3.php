@@ -3,16 +3,17 @@ namespace Test3;
 
 class newBase
 {
-    static private $count = 0;
+    static private $count = 1;		// начальный счётчик в единицу, покольку за 0 программа воспринимает как empty и выдаётся исключение
     static private $arSetName = [];
     /**
      * @param string $name
      */
     function __construct(string $name = '0')    // $name Должна быть string
     {
+			
         if (empty($name)) {
-            while (array_search(self::$count, self::$arSetName) != false) {
-                ++self::$count;
+            if (array_search(self::$count, self::$arSetName)) { // array_search сам по себе проходит по массиву, цикл не нужен, поставлено if, убрано != false, эквивалент true
+				++self::$count;												
             }
             $name = self::$count;
         }
@@ -197,4 +198,5 @@ $save = $obj2->getSave();
 $obj3 = newView::load($save);
 
 var_dump($obj2->getSave() == $obj3->getSave());
+
 
