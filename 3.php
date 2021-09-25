@@ -113,7 +113,7 @@ class newView extends newBase
         } elseif ($this->type == 'test') {
             $this->size = parent::getSize();
         } else {
-            $this->size = strlen($this->value);
+            $this->size = (string)strlen($this->value); // добавлено приведение к строке
         }
     }
 
@@ -179,7 +179,7 @@ class newView extends newBase
     /**
      * @return newView
      */
-    static public function load(string $value): newView
+    static public function load(string $value): newView  // указан тип возвращаемого значения
     {
 
         $arValue = explode(':', $value);
